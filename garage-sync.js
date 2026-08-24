@@ -1,44 +1,121 @@
 (()=>{
 "use strict";
-const STORE_KEY="chargecompare-v11";
-const LABEL_KEY="chargecompare-garage-profile";
 const $=id=>document.getElementById(id);
+const OLD_KEY="chargecompare-v11";
+const KEY="chargecompare-v113";
+const IRVE=["4ca78c71-4ea4-475d-bd3a-d4aef88f7bf8","eb76d20a-8501-400e-b336-d85724de5435"];
+const DYNAMIC="https://www.data.gouv.fr/api/1/datasets/r/89185b1f-f958-4c5b-9282-399a66ecee97";
+const BASE={
+  "id4-pro":{name:"Volkswagen ID.4 Pro 77 kWh",battery:77,consumption:19.5,dc:175,ac:11},
+  "id4-pure":{name:"Volkswagen ID.4 Pure 52 kWh",battery:52,consumption:18.5,dc:145,ac:11},
+  "modely-rwd":{name:"Tesla Model Y Propulsion",battery:60,consumption:16.5,dc:175,ac:11},
+  "modely-lr":{name:"Tesla Model Y Grande Autonomie",battery:75,consumption:17.5,dc:250,ac:11},
+  "scenic87":{name:"Renault Scenic E-Tech 87 kWh",battery:87,consumption:17.5,dc:150,ac:22},
+  "megane60":{name:"Renault Megane E-Tech 60 kWh",battery:60,consumption:16.5,dc:130,ac:22},
+  "e3008":{name:"Peugeot E-3008 73 kWh",battery:73,consumption:17.2,dc:160,ac:11},
+  "ec3":{name:"Citroën ë-C3 44 kWh",battery:44,consumption:17,dc:100,ac:11},
+  "custom":{name:"Personnalisé",battery:77,consumption:20,dc:150,ac:11}
+};
+const norm=s=>String(s||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
+const esc=s=>String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;"}[m]));
 const num=id=>{const v=Number(String($(id)?.value||"").replace(",","."));return Number.isFinite(v)?v:0};
-function readState(){try{return JSON.parse(localStorage.getItem(STORE_KEY)||"{}")||{}}catch{return {}}}
-function readProfile(){try{return JSON.parse(localStorage.getItem(LABEL_KEY)||"null")}catch{return null}}
-function patchUI(){
-  const state=readState(),p=readProfile();
-  const routeSel=$("vehicleSelect"),garageSel=$("garageVehicleSelect"),summary=$("vehicleSummary");
-  if(routeSel){routeSel.disabled=true;routeSel.title="Le véhicule du parcours se règle dans Garage"}
-  if(!p||state.vehicleId!=="custom")return;
-  [routeSel,garageSel].forEach(sel=>{
-    if(!sel)return;
-    const opt=[...sel.options].find(o=>o.value==="custom");
-    if(opt)opt.textContent=`${p.name} (Garage)`;
-    sel.value="custom";
-  });
-  if(summary)summary.innerHTML=`<b>${p.name}</b> <span class="miniBadge real">GARAGE</span><br>${p.battery} kWh utiles · ${p.consumption} kWh/100 km · DC max ${p.dc} kW · AC ${p.ac} kW<br><span class="note">✓ Ces paramètres seront utilisés automatiquement dans Parcours</span>`;
+const clamp=(v,a,b)=>Math.min(b,Math.max(a,v));
+const eur=v=>Number(v||0).toLocaleString("fr-FR",{style:"currency",currency:"EUR"});
+const fmtMin=v=>{v=Math.max(0,Math.round(v));const h=Math.floor(v/60),m=v%60;return h?`${h} h ${String(m).padStart(2,"0")}`:`${m} min`};
+const readOld=()=>{try{return JSON.parse(localStorage.getItem(OLD_KEY)||"{}")||{}}catch{return {}}};
+const saveOld=s=>localStorage.setItem(OLD_KEY,JSON.stringify(s));
+const read=()=>{try{return JSON.parse(localStorage.getItem(KEY)||"{}")||{}}catch{return {}}};
+const save=s=>localStorage.setItem(KEY,JSON.stringify(s));
+function baseFor(id){return BASE[id]||BASE.custom}
+function migrate(){
+  let s=read();
+  if(Array.isArray(s.profiles)&&s.profiles.length){if(!s.activeId||!s.profiles.some(p=>p.id===s.activeId))s.activeId=s.profiles[0].id;save(s);return s}
+  const old=readOld(),legacy=(()=>{try{return JSON.parse(localStorage.getItem("chargecompare-garage-profile")||"null")}catch{return null}})();
+  const id=old.vehicleId||legacy?.id||"id4-pro",b=baseFor(id),ov=id==="custom"?(old.custom||legacy||{}):((old.vehicleOverrides||{})[id]||legacy||{}),m={...b,...ov};
+  const p={id:`car-${Date.now()}`,name:legacy?.name||m.name||"Ma voiture",baseId:id,battery:Number(m.battery)||77,consumption:Number(m.consumption)||20,highwayConsumption:Number(m.highwayConsumption)||Math.round((Number(m.consumption)||20)*1.12*10)/10,dc:Number(m.dc)||150,ac:Number(m.ac)||11,maxSoc:Number(m.maxSoc||m.maxChargeSoc)||80,minPower:Number(m.minPower||m.minStationPower)||50,preferred:m.preferred||m.preferredNetworks||"",avoided:m.avoided||m.avoidedNetworks||""};
+  s={profiles:[p],activeId:p.id};save(s);return s;
 }
-const saveBtn=$("saveVehicleBtn");
-if(saveBtn){
-  const original=saveBtn.onclick;
-  saveBtn.onclick=function(e){
-    const sel=$("garageVehicleSelect");
-    const originalId=sel?.value||"custom";
-    const originalName=sel?.selectedOptions?.[0]?.textContent?.replace(/ \(Garage\)$/,'')||"Mon véhicule";
-    const profile={id:originalId,name:originalName,battery:num("customBattery"),consumption:num("customConsumption"),dc:num("customDc"),ac:num("customAc")};
-    localStorage.setItem(LABEL_KEY,JSON.stringify(profile));
-    if(sel)sel.value="custom";
-    if(typeof original==="function")original.call(this,e);
-    patchUI();
-    this.textContent="✓ Enregistré dans Garage et Parcours";
-    setTimeout(()=>this.textContent="Enregistrer",1400);
-  };
+let store=migrate();
+let appSave=null,routeMap=null,routeLine=null,routeMarkers=[],routePlan=null;
+function active(){return store.profiles.find(p=>p.id===store.activeId)||store.profiles[0]}
+function tokens(v){return String(v||"").split(",").map(x=>norm(x.trim())).filter(Boolean)}
+function netText(s){return norm(`${s.name||""} ${s.operator||""} ${s.brand||""}`)}
+function matches(s,v){const h=netText(s);return tokens(v).some(t=>h.includes(t))}
+function setStatus(t,type=""){const e=$("routeStatus");if(!e)return;e.textContent=t;e.className=`status${type?" "+type:""}`}
+function ensureGarageUI(){
+  const card=$("garageVehicleSelect")?.closest(".card");if(!card||$("garageProfileSelect"))return;
+  const firstLabel=$("garageVehicleSelect").previousElementSibling;if(firstLabel)firstLabel.textContent="Modèle de base";
+  const box=document.createElement("div");box.innerHTML=`
+    <label>Voiture enregistrée</label><select id="garageProfileSelect" class="input"></select>
+    <div class="actionGrid" style="margin-top:8px"><button id="garageAddProfile" class="btn">＋ Nouvelle voiture</button><button id="garageDeleteProfile" class="btn danger">Supprimer</button></div>
+    <label>Nom de la voiture</label><input id="garageProfileName" class="input" placeholder="Ex. Mon ID.4">
+  `;card.insertBefore(box,card.firstChild.nextSibling);
+  const grid=$("customBattery")?.closest(".settingsGrid");if(grid){
+    const h=document.createElement("div");h.innerHTML='<label>Conso autoroute</label><div class="unitInput"><input id="garageHighway" class="input" inputmode="decimal"><span>kWh/100</span></div>';grid.appendChild(h);
+    const mx=document.createElement("div");mx.innerHTML='<label>Limite de recharge</label><div class="unitInput"><input id="garageMaxSoc" class="input" inputmode="decimal"><span>%</span></div>';grid.appendChild(mx);
+    const mp=document.createElement("div");mp.innerHTML='<label>Puissance borne min.</label><div class="unitInput"><input id="garageMinPower" class="input" inputmode="decimal"><span>kW</span></div>';grid.appendChild(mp);
+  }
+  const saveBtn=$("saveVehicleBtn");
+  const extra=document.createElement("div");extra.innerHTML='<label>Réseaux à privilégier</label><input id="garagePreferred" class="input" placeholder="Ex. Ionity, Electra, Fastned"><label>Réseaux à éviter</label><input id="garageAvoided" class="input" placeholder="Ex. réseau X, réseau Y"><p class="note">Sépare les réseaux par des virgules. Les réseaux évités sont exclus du parcours ; les réseaux préférés sont favorisés.</p>';
+  card.insertBefore(extra,saveBtn);
+  saveBtn.textContent="Enregistrer cette voiture";
+  renderGarageSelectors();loadProfileToUI();
+  $("garageProfileSelect").onchange=e=>{store.activeId=e.target.value;save(store);loadProfileToUI();syncInternal(active());refreshRouteVehicle()};
+  $("garageAddProfile").onclick=()=>{const b=baseFor($("garageVehicleSelect").value||"id4-pro"),p={id:`car-${Date.now()}`,name:`${b.name} 2`,baseId:$("garageVehicleSelect").value||"id4-pro",battery:b.battery,consumption:b.consumption,highwayConsumption:Math.round(b.consumption*1.12*10)/10,dc:b.dc,ac:b.ac,maxSoc:80,minPower:50,preferred:"",avoided:""};store.profiles.push(p);store.activeId=p.id;save(store);renderGarageSelectors();loadProfileToUI();syncInternal(p);refreshRouteVehicle();$("garageProfileName").focus()};
+  $("garageDeleteProfile").onclick=()=>{if(store.profiles.length<=1)return alert("Garde au moins une voiture dans le Garage.");const p=active();if(!confirm(`Supprimer ${p.name} ?`))return;store.profiles=store.profiles.filter(x=>x.id!==p.id);store.activeId=store.profiles[0].id;save(store);renderGarageSelectors();loadProfileToUI();syncInternal(active());refreshRouteVehicle()};
+  $("garageVehicleSelect").addEventListener("change",()=>{const b=baseFor($("garageVehicleSelect").value);$("customBattery").value=b.battery;$("customConsumption").value=b.consumption;$("customDc").value=b.dc;$("customAc").value=b.ac;$("garageHighway").value=Math.round(b.consumption*1.12*10)/10});
 }
-const routeTab=document.querySelector('[data-tab="route"]');
-if(routeTab)routeTab.addEventListener("click",()=>setTimeout(patchUI,0));
-const garageTab=document.querySelector('[data-tab="garage"]');
-if(garageTab)garageTab.addEventListener("click",()=>setTimeout(patchUI,0));
-patchUI();
-window.addEventListener("load",patchUI);
+function renderGarageSelectors(){const s=$("garageProfileSelect");if(!s)return;s.innerHTML="";store.profiles.forEach(p=>{const o=document.createElement("option");o.value=p.id;o.textContent=p.name;s.appendChild(o)});s.value=store.activeId}
+function loadProfileToUI(){const p=active();if(!p)return;$("garageProfileSelect").value=p.id;$("garageProfileName").value=p.name;$("garageVehicleSelect").value=p.baseId||"custom";$("customBattery").value=String(p.battery).replace(".",",");$("customConsumption").value=String(p.consumption).replace(".",",");$("customDc").value=String(p.dc).replace(".",",");$("customAc").value=String(p.ac).replace(".",",");$("garageHighway").value=String(p.highwayConsumption).replace(".",",");$("garageMaxSoc").value=p.maxSoc;$("garageMinPower").value=p.minPower;$("garagePreferred").value=p.preferred||"";$("garageAvoided").value=p.avoided||""}
+function captureProfile(){const p=active();Object.assign(p,{name:$("garageProfileName").value.trim()||"Ma voiture",baseId:$("garageVehicleSelect").value,battery:num("customBattery"),consumption:num("customConsumption"),highwayConsumption:num("garageHighway")||num("customConsumption"),dc:num("customDc"),ac:num("customAc"),maxSoc:clamp(num("garageMaxSoc")||80,50,95),minPower:Math.max(22,num("garageMinPower")||22),preferred:$("garagePreferred").value.trim(),avoided:$("garageAvoided").value.trim()});save(store);return p}
+function syncInternal(p){
+  const old=readOld();old.vehicleId="custom";old.custom={battery:p.battery,consumption:p.highwayConsumption,dc:p.dc,ac:p.ac};saveOld(old);
+  const sel=$("garageVehicleSelect"),b=$("saveVehicleBtn");if(!sel||!b||typeof appSave!=="function")return;
+  const vis={sel:sel.value,batt:$("customBattery").value,cons:$("customConsumption").value,dc:$("customDc").value,ac:$("customAc").value};
+  sel.value="custom";$("customBattery").value=p.battery;$("customConsumption").value=p.highwayConsumption;$("customDc").value=p.dc;$("customAc").value=p.ac;appSave.call(b,new Event("click"));
+  sel.value=vis.sel;$("customBattery").value=vis.batt;$("customConsumption").value=vis.cons;$("customDc").value=vis.dc;$("customAc").value=vis.ac;
+}
+function refreshRouteVehicle(){
+  const s=$("vehicleSelect"),p=active();if(!s||!p)return;s.innerHTML="";store.profiles.forEach(x=>{const o=document.createElement("option");o.value=x.id;o.textContent=x.name;s.appendChild(o)});s.value=p.id;s.disabled=false;
+  s.onchange=e=>{store.activeId=e.target.value;save(store);renderGarageSelectors();loadProfileToUI();syncInternal(active());refreshRouteVehicle()};
+  const v=$("vehicleSummary");if(v)v.innerHTML=`<b>${esc(p.name)}</b> <span class="miniBadge real">GARAGE</span><br>${p.battery} kWh · autoroute ${p.highwayConsumption} kWh/100 · DC ${p.dc} kW · recharge max ${p.maxSoc}% · bornes ${p.minPower} kW+${p.preferred?`<br><span class="note">⭐ ${esc(p.preferred)}</span>`:""}${p.avoided?`<br><span class="note">⛔ ${esc(p.avoided)}</span>`:""}`;
+  if($("targetSoc")){$("targetSoc").max=p.maxSoc;if(num("targetSoc")>p.maxSoc)$("targetSoc").value=p.maxSoc}
+}
+async function getJSON(url,timeout=16000){const c=new AbortController(),t=setTimeout(()=>c.abort(),timeout);try{const r=await fetch(url,{signal:c.signal,headers:{Accept:"application/json"}});if(!r.ok)throw Error(`HTTP ${r.status}`);return await r.json()}finally{clearTimeout(t)}}
+function hav(a,b){const R=6371,dlat=(b[1]-a[1])*Math.PI/180,dlon=(b[0]-a[0])*Math.PI/180,x=Math.sin(dlat/2)**2+Math.cos(a[1]*Math.PI/180)*Math.cos(b[1]*Math.PI/180)*Math.sin(dlon/2)**2;return 2*R*Math.asin(Math.sqrt(x))}
+async function geocode(q){const s=String(q||"").trim();if(!s)throw Error("Lieu manquant");const u=/^\d{5}$/.test(s)?`https://geo.api.gouv.fr/communes?codePostal=${encodeURIComponent(s)}&fields=nom,code,centre&limit=8`:`https://geo.api.gouv.fr/communes?nom=${encodeURIComponent(s)}&fields=nom,code,centre&boost=population&limit=8`;const r=await getJSON(u);if(!r[0]?.centre?.coordinates)throw Error(`Lieu introuvable : ${s}`);return{name:r[0].nom,code:r[0].code,coord:r[0].centre.coordinates}}
+async function osrm(a,b){const j=await getJSON(`https://router.project-osrm.org/route/v1/driving/${a[0]},${a[1]};${b[0]},${b[1]}?overview=full&geometries=geojson&steps=false`,24000);if(j.code!=="Ok"||!j.routes?.[0])throw Error("Itinéraire introuvable");return j.routes[0]}
+function sample(coords,step=18){const out=[{coord:coords[0],p:0}];let total=0,next=step;for(let i=1;i<coords.length;i++){const d=hav(coords[i-1],coords[i]),before=total;total+=d;while(total>=next){const f=d?clamp((next-before)/d,0,1):0;out.push({coord:[coords[i-1][0]+(coords[i][0]-coords[i-1][0])*f,coords[i-1][1]+(coords[i][1]-coords[i-1][1])*f],p:next});next+=step}}out.push({coord:coords.at(-1),p:total});return out}
+async function communes(samples){const seen=new Map();for(const p of samples){try{const r=await getJSON(`https://geo.api.gouv.fr/communes?lat=${p.coord[1]}&lon=${p.coord[0]}&fields=nom,code&limit=1`,8000);if(r[0]&&!seen.has(r[0].code))seen.set(r[0].code,r[0])}catch{}}return [...seen.values()]}
+async function rowsCommune(code){for(const res of IRVE){try{let all=[];for(let page=1;page<=4;page++){const j=await getJSON(`https://tabular-api.data.gouv.fr/api/resources/${res}/data/?code_insee_commune__exact=${code}&page_size=100&page=${page}`);const d=Array.isArray(j.data)?j.data:[];all=all.concat(d);if(!d.length||!j.links?.next)break}if(all.length)return all}catch{}}return[]}
+function coord(v){if(Array.isArray(v))return v;if(typeof v==="string"){try{const x=JSON.parse(v);if(Array.isArray(x))return x}catch{}const m=v.match(/-?\d+(?:\.\d+)?/g);if(m?.length>=2)return[Number(m[0]),Number(m[1])]}return null}
+function aggregate(rows){const m=new Map();for(const r of rows){const id=r.id_station_itinerance||r.id_station_local||`${r.nom_station||""}|${r.adresse_station||""}`;if(!id)continue;let s=m.get(id);if(!s){s={id,name:r.nom_station||r.nom_enseigne||"Station",address:r.adresse_station||"",operator:r.nom_operateur||r.nom_enseigne||"",brand:r.nom_enseigne||"",coord:coord(r.coordonneesXY),maxPower:0,tarification:r.tarification||"",evse:[]};m.set(id,s)}s.maxPower=Math.max(s.maxPower,Number(r.puissance_nominale)||0);if(r.id_pdc_itinerance)s.evse.push(r.id_pdc_itinerance);if(!s.tarification&&r.tarification)s.tarification=r.tarification}return[...m.values()]}
+function estimate(p){return p<=22?.35:p<=50?.45:p<150?.55:.59}
+function price(s){const t=String(s.tarification||"").replace(",","."),m=t.match(/(\d+(?:\.\d+)?)\s*€?\s*\/\s*kwh/i);if(m){const v=Number(m[1]);if(v>0&&v<5)return v}const h=netText(s);if(h.includes("izivia")&&h.includes("mcdonald"))return .35;return estimate(s.maxPower)}
+async function candidates(samples,p,onProgress){const cs=await communes(samples),all=[];for(let i=0;i<cs.length;i++){onProgress?.(i+1,cs.length);all.push(...aggregate(await rowsCommune(cs[i].code)))}const u=new Map();all.forEach(s=>u.set(s.id,s));const out=[];for(const s of u.values()){if(!s.coord||s.maxPower<p.minPower||matches(s,p.avoided))continue;let d=999,prog=0;for(const q of samples){const x=hav(s.coord,q.coord);if(x<d){d=x;prog=q.p}}if(d<=clamp(num("detourKm")||12,2,50))out.push({...s,routeP:prog,detour:d,basePrice:price(s),preferred:matches(s,p.preferred)})}return out.sort((a,b)=>a.routeP-b.routeP)}
+function chargeMin(p,power,a,b){const peak=Math.max(20,Math.min(power||50,p.dc||100)),bands=[[0,50,.9],[50,70,.75],[70,80,.55],[80,90,.35],[90,100,.2]];let min=2;for(const [lo0,hi0,f] of bands){const lo=Math.max(a,lo0),hi=Math.min(b,hi0);if(hi>lo)min+=(p.battery*(hi-lo)/100)/(peak*f)*60}return min}
+function mode(){return document.querySelector('[data-mode].active')?.dataset.mode||"balanced"}
+function score(s,ctx){const progress=(s.routeP-ctx.pos)/Math.max(1,ctx.maxKm),power=Math.min(1,s.maxPower/Math.max(80,ctx.p.dc)),cheap=clamp(1-(s.basePrice-.25)/.55,0,1),det=clamp(1-s.detour/ctx.detour,0,1),pref=s.preferred?1:0;if(mode()==="fast")return progress*.42+power*.38+det*.12+pref*.08;if(mode()==="cheap")return progress*.3+cheap*.42+det*.18+pref*.1;return progress*.38+power*.22+cheap*.18+det*.12+pref*.1}
+function build(routeKm,list,p,start,reserve,target,detour){const old=readOld(),cards={electroverse:old.cards?.electroverse!==false,chargemap:old.cards?.chargemap!==false,operator:!!old.cards?.operator};const stops=[];let pos=0,soc=start,totalKwh=0,totalMin=0,totalCost=0,guard=0;const kpk=p.highwayConsumption/100;while(guard++<12){const remaining=routeKm-pos,maxKm=(p.battery*(soc-reserve)/100)/kpk;if(remaining<=maxKm)return{ok:true,stops,totalKwh,totalMin,totalCost,arrival:clamp(soc-(remaining*kpk/p.battery*100),0,100)};let pool=list.filter(s=>s.routeP>pos+Math.max(6,maxKm*.4)&&s.routeP<=pos+maxKm*.97);if(!pool.length)pool=list.filter(s=>s.routeP>pos+4&&s.routeP<=pos+maxKm*.98);if(!pool.length)return{ok:false,reason:"Aucune borne compatible atteignable avec la réserve demandée."};pool.sort((a,b)=>score(b,{pos,maxKm,p,detour})-score(a,{pos,maxKm,p,detour}));const s=pool[0],leg=s.routeP-pos,arr=clamp(soc-(leg*kpk/p.battery*100),0,100),neededDest=reserve+((routeKm-s.routeP)*kpk/p.battery*100),depart=Math.min(p.maxSoc,Math.max(target,Math.min(p.maxSoc,neededDest))),kwh=p.battery*(depart-arr)/100;if(depart<=arr+1)return{ok:false,reason:"La limite de recharge du Garage est trop basse pour continuer ce trajet."};const mins=chargeMin(p,s.maxPower,arr,depart),ev=s.basePrice,cm=ev*1.10,choices=[];if(cards.electroverse)choices.push({name:"Electroverse",price:ev});if(cards.chargemap)choices.push({name:"Chargemap",price:cm});choices.sort((a,b)=>a.price-b.price);const best=choices[0]||{name:"Estimation",price:ev},cost=kwh*best.price;stops.push({...s,arrivalSoc:arr,departSoc:depart,kwh,mins,ev,cm,best:best.name,cost});totalKwh+=kwh;totalMin+=mins;totalCost+=cost;pos=s.routeP;soc=depart}return{ok:false,reason:"Trop d’arrêts nécessaires."}}
+function ensureMap(){if(!window.L)return null;const old=$("routeMap");if(!old)return null;if(!routeMap){const fresh=old.cloneNode(false);old.parentNode.replaceChild(fresh,old);routeMap=L.map(fresh,{zoomControl:true}).setView([46.6,2.4],5);L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19,attribution:"© OpenStreetMap"}).addTo(routeMap)}return routeMap}
+function draw(coords,stops,A,B){const m=ensureMap();if(!m)return;if(routeLine)routeLine.remove();routeMarkers.forEach(x=>x.remove());routeMarkers=[];routeLine=L.polyline(coords.map(c=>[c[1],c[0]]),{weight:5}).addTo(m);routeMarkers.push(L.marker([A.coord[1],A.coord[0]]).addTo(m).bindPopup(`Départ : ${esc(A.name)}`),L.marker([B.coord[1],B.coord[0]]).addTo(m).bindPopup(`Arrivée : ${esc(B.name)}`));stops.forEach((s,i)=>routeMarkers.push(L.marker([s.coord[1],s.coord[0]]).addTo(m).bindPopup(`<b>Arrêt ${i+1}</b><br>${esc(s.name)}<br>${s.maxPower} kW`)));m.fitBounds(routeLine.getBounds(),{padding:[20,20]});setTimeout(()=>m.invalidateSize(),80)}
+function nav(c,k){const[lon,lat]=c;window.open(k==="apple"?`https://maps.apple.com/?daddr=${lat},${lon}&dirflg=d`:`https://www.google.com/maps/dir/?api=1&destination=${lat},${lon}&travelmode=driving`,"_blank")}
+function renderStops(plan){const e=$("routeStops");e.innerHTML="";plan.stops.forEach((s,i)=>{const d=document.createElement("div");d.className="stopCard";d.dataset.i=i;d.innerHTML=`<div class="stopHead"><h3>Arrêt ${i+1} — ${esc(s.name)}</h3><span class="chip">km ${Math.round(s.routeP)}</span></div><div class="muted">${esc(s.address)}<br>${esc(s.operator)} · ${s.maxPower} kW · détour ~${s.detour.toFixed(1)} km${s.preferred?' · ⭐ préféré':''}</div><div class="chipRow"><span class="chip">🔋 ${s.arrivalSoc.toFixed(0)} → ${s.departSoc.toFixed(0)} %</span><span class="chip">⚡ ${s.kwh.toFixed(1)} kWh</span><span class="chip">⏱ ${fmtMin(s.mins)}</span><span class="chip">${esc(s.best)}</span></div><div class="stopGrid"><div class="stopMini"><span>Electroverse estimé</span><b>${eur(s.ev*s.kwh)}</b></div><div class="stopMini"><span>Chargemap estimé</span><b>${eur(s.cm*s.kwh)}</b></div></div><div class="liveBox stopLive">Temps réel non vérifié.</div><div class="stopActions"><button class="btn" data-nav="apple"> Plans</button><button class="btn" data-nav="google">Google Maps</button></div>`;d.querySelectorAll("[data-nav]").forEach(b=>b.onclick=()=>nav(s.coord,b.dataset.nav));e.appendChild(d)})}
+async function planRoute(){const b=$("planRouteBtn");b.disabled=true;try{const p=active();syncInternal(p);refreshRouteVehicle();$("routeSummaryCard").classList.add("hidden");$("stopsCard").classList.add("hidden");setStatus("Calcul de l’itinéraire…");let A;if($("routeFrom").value==="Ma position GPS"&&window.__ccGps)A={name:"Ma position",coord:window.__ccGps};else A=await geocode($("routeFrom").value);const B=await geocode($("routeTo").value),r=await osrm(A.coord,B.coord),routeKm=r.distance/1000,driveMin=r.duration/60,coords=r.geometry.coordinates,start=clamp(num("startSoc"),1,100),reserve=clamp(num("reserveSoc"),0,80),target=clamp(num("targetSoc"),20,p.maxSoc),trip=routeKm*p.highwayConsumption/100,direct=start-(trip/p.battery*100);let plan;if(direct>=reserve)plan={ok:true,stops:[],totalKwh:0,totalMin:0,totalCost:0,arrival:direct};else{const sm=sample(coords);setStatus("Recherche des bornes compatibles…");const c=await candidates(sm,p,(i,n)=>setStatus(`Bornes IRVE : ${i}/${n} zones…`));plan=build(routeKm,c,p,start,reserve,target,clamp(num("detourKm")||12,2,50));if(!plan.ok)throw Error(plan.reason)}routePlan={A,B,r,coords,plan,p,routeKm,driveMin};$("routeMapCard").classList.remove("hidden");$("routeSummaryCard").classList.remove("hidden");$("routeTitle").textContent=`${A.name} → ${B.name}`;$("sumDistance").textContent=`${Math.round(routeKm)} km`;$("sumDrive").textContent=fmtMin(driveMin);$("sumChargeTime").textContent=fmtMin(plan.totalMin);$("sumStops").textContent=plan.stops.length;$("sumCost").textContent=eur(plan.totalCost);$("sumArrivalSoc").textContent=`${plan.arrival.toFixed(0)} %`;$("routeVerdict").innerHTML=plan.stops.length?`${plan.stops.length} arrêt(s) · ${plan.totalKwh.toFixed(1)} kWh repris · ${fmtMin(plan.totalMin)} de recharge · limite Garage ${p.maxSoc} %.`:`Aucun arrêt nécessaire avec ${p.name}.`;if(plan.stops.length){$("stopsCard").classList.remove("hidden");renderStops(plan)}draw(coords,plan.stops,A,B);setStatus(`Parcours calculé avec ${p.name} · conso autoroute ${p.highwayConsumption} kWh/100 · recharge max ${p.maxSoc} %.`,"good")}catch(e){setStatus(`Erreur : ${e.message}`,"bad")}finally{b.disabled=false}}
+function parseCSV(text){const rows=[],row=[];let cell="",q=false;for(let i=0;i<text.length;i++){const ch=text[i];if(q){if(ch==='"'&&text[i+1]==='"'){cell+='"';i++}else if(ch==='"')q=false;else cell+=ch}else if(ch==='"')q=true;else if(ch===","){row.push(cell);cell=""}else if(ch==="\n"){row.push(cell);rows.push(row.splice(0));cell=""}else if(ch!=="\r")cell+=ch}if(cell||row.length){row.push(cell);rows.push(row)}return rows}
+async function refreshLive(){if(!routePlan?.plan.stops.length)return setStatus("Aucun arrêt à vérifier.","good");const b=$("refreshRouteLiveBtn");b.disabled=true;try{setStatus("Téléchargement du temps réel…");const r=await fetch(DYNAMIC,{cache:"no-store"});if(!r.ok)throw Error(`HTTP ${r.status}`);const rows=parseCSV(await r.text()),head=rows[0],id=head.indexOf("id_pdc_itinerance"),etat=head.indexOf("etat_pdc"),occ=head.indexOf("occupation_pdc"),map=new Map();for(let i=1;i<rows.length;i++)if(rows[i][id])map.set(rows[i][id],{state:rows[i][etat],occ:rows[i][occ]});document.querySelectorAll(".stopCard").forEach((card,i)=>{const s=routePlan.plan.stops[i],vals=s.evse.map(x=>map.get(x)).filter(Boolean),free=vals.filter(x=>x.state==="en_service"&&x.occ==="libre").length,occupied=vals.filter(x=>x.occ==="occupe").length;card.querySelector(".stopLive").innerHTML=vals.length?`<b>Temps réel</b><br>${free} libre(s) · ${occupied} occupé(s)`:`<b>Temps réel</b><br>Aucune donnée dynamique.`});setStatus("Disponibilité mise à jour quand l’opérateur la publie.","good")}catch(e){setStatus(`Temps réel indisponible : ${e.message}`,"bad")}finally{b.disabled=false}}
+function init(){
+  document.querySelector(".version")?.replaceChildren(document.createTextNode("V11.3"));
+  ensureGarageUI();
+  const saveBtn=$("saveVehicleBtn");appSave=saveBtn?.onclick||null;if(saveBtn)saveBtn.onclick=e=>{e?.preventDefault?.();const p=captureProfile();syncInternal(p);renderGarageSelectors();refreshRouteVehicle();loadProfileToUI();saveBtn.textContent="✓ Voiture enregistrée et utilisée dans Parcours";setTimeout(()=>saveBtn.textContent="Enregistrer cette voiture",1500)};
+  syncInternal(active());refreshRouteVehicle();
+  if($("planRouteBtn"))$("planRouteBtn").onclick=planRoute;
+  if($("fitRouteBtn"))$("fitRouteBtn").onclick=()=>{if(routeMap&&routeLine)routeMap.fitBounds(routeLine.getBounds(),{padding:[20,20]})};
+  if($("refreshRouteLiveBtn"))$("refreshRouteLiveBtn").onclick=refreshLive;
+  if($("saveRouteBtn"))$("saveRouteBtn").onclick=()=>{if(!routePlan)return;const old=readOld();old.savedRoutes=Array.isArray(old.savedRoutes)?old.savedRoutes:[];old.savedRoutes.unshift({from:routePlan.A.name,to:routePlan.B.name,when:new Date().toISOString()});old.savedRoutes=old.savedRoutes.slice(0,10);saveOld(old);$("saveRouteBtn").textContent="✓ Trajet enregistré";setTimeout(()=>$("saveRouteBtn").textContent="☆ Enregistrer trajet",1200)};
+  const gps=$("gpsBtn");if(gps)gps.addEventListener("click",()=>{navigator.geolocation?.getCurrentPosition(p=>{window.__ccGps=[p.coords.longitude,p.coords.latitude]},()=>{})});
+  document.querySelector('[data-tab="garage"]')?.addEventListener("click",()=>setTimeout(()=>{renderGarageSelectors();loadProfileToUI()},0));
+  document.querySelector('[data-tab="route"]')?.addEventListener("click",()=>setTimeout(refreshRouteVehicle,0));
+}
+setTimeout(init,0);
 })();
