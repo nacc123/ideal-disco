@@ -1,19 +1,23 @@
-const CACHE="chargecompare-v11-9";
-const SHELL=["./","./index.html","./styles.css","./manifest.json","./icon.svg"];
-self.addEventListener("install",e=>{
+const VERSION="chargecompare-v12-3-cleanup";
+
+self.addEventListener("install",event=>{
   self.skipWaiting();
-  e.waitUntil(caches.open(CACHE).then(c=>c.addAll(SHELL)).catch(()=>{}));
 });
-self.addEventListener("activate",e=>e.waitUntil(
-  caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim())
-));
-self.addEventListener("fetch",e=>{
-  if(e.request.method!=="GET")return;
-  const u=new URL(e.request.url);
-  if(u.origin!==location.origin)return;
-  e.respondWith(fetch(e.request,{cache:"no-store"}).then(r=>{
-    const copy=r.clone();
-    caches.open(CACHE).then(c=>c.put(e.request,copy)).catch(()=>{});
-    return r;
-  }).catch(()=>caches.match(e.request)));
+
+self.addEventListener("activate",event=>{
+  event.waitUntil((async()=>{
+    const keys=await caches.keys();
+    await Promise.all(keys.map(key=>caches.delete(key)));
+    await self.clients.claim();
+    try{await self.registration.unregister()}catch{}
+    const clients=await self.clients.matchAll({type:"window",includeUncontrolled:true});
+    for(const client of clients){
+      try{client.postMessage({type:"CC_SW_RETIRED",version:VERSION})}catch{}
+    }
+  })());
+});
+
+self.addEventListener("fetch",event=>{
+  if(event.request.method!=="GET")return;
+  event.respondWith(fetch(event.request,{cache:"no-store"}));
 });
