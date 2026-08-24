@@ -1,5 +1,5 @@
-const CACHE="chargecompare-v11-8";
-const SHELL=["./","./index.html","./styles.css","./manifest.json","./icon.svg","./waze-lite.js"];
+const CACHE="chargecompare-v11-9";
+const SHELL=["./","./index.html","./styles.css","./manifest.json","./icon.svg"];
 self.addEventListener("install",e=>{
   self.skipWaiting();
   e.waitUntil(caches.open(CACHE).then(c=>c.addAll(SHELL)).catch(()=>{}));
