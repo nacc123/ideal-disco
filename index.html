@@ -17,7 +17,7 @@
 <body>
 <div class="app">
 <header>
-  <div class="brand"><div><div class="logo">ChargeCompare</div><div class="subtitle">Recharge EV • prix • parcours</div></div><span class="version">V11.2</span></div>
+  <div class="brand"><div><div class="logo">ChargeCompare</div><div class="subtitle">Recharge EV • prix • parcours</div></div><span class="version">V11.4</span></div>
 </header>
 
 <nav class="tabs">
@@ -97,7 +97,7 @@
       <div><label>Destination</label><input id="routeTo" class="input" placeholder="Ex. Annecy"></div>
     </div>
     <div class="savedPlaces" id="savedPlaces"></div>
-    <label>Véhicule du Garage</label>
+    <label>Voiture du Garage</label>
     <select id="vehicleSelect" class="input"></select>
     <div id="vehicleSummary" class="vehicleSummary"></div>
 
@@ -141,16 +141,30 @@
 
 <section id="garageTab" class="tabPage hidden">
   <div class="card">
-    <h2>Mon véhicule</h2>
-    <label>Profil</label><select id="garageVehicleSelect" class="input"></select>
-    <p class="note">Les profils sont indicatifs et restent modifiables. La puissance réelle dépend de la version, de la température et de l’état de charge.</p>
+    <h2>Mes voitures</h2>
+    <label>Voiture enregistrée</label>
+    <select id="garageSavedVehicleSelect" class="input"></select>
+    <div class="actionGrid" style="margin-top:8px">
+      <button id="newVehicleBtn" class="btn">＋ Nouvelle voiture</button>
+      <button id="deleteVehicleBtn" class="btn danger">Supprimer</button>
+    </div>
+
+    <label>Nom de la voiture</label><input id="garageVehicleName" class="input" placeholder="Ex. Mon ID.4">
+    <label>Modèle de base</label><select id="garageVehicleSelect" class="input"></select>
+    <p class="note">Le modèle sert de base. Les valeurs ci-dessous sont celles réellement utilisées par le calcul de parcours.</p>
     <div class="settingsGrid">
       <div><label>Batterie utile</label><div class="unitInput"><input id="customBattery" class="input" inputmode="decimal"><span>kWh</span></div></div>
-      <div><label>Conso route</label><div class="unitInput"><input id="customConsumption" class="input" inputmode="decimal"><span>kWh/100</span></div></div>
+      <div><label>Conso mixte</label><div class="unitInput"><input id="customConsumption" class="input" inputmode="decimal"><span>kWh/100</span></div></div>
+      <div><label>Conso autoroute</label><div class="unitInput"><input id="customHighwayConsumption" class="input" inputmode="decimal"><span>kWh/100</span></div></div>
       <div><label>Puissance DC max</label><div class="unitInput"><input id="customDc" class="input" inputmode="decimal"><span>kW</span></div></div>
       <div><label>Puissance AC max</label><div class="unitInput"><input id="customAc" class="input" inputmode="decimal"><span>kW</span></div></div>
+      <div><label>Limite de recharge</label><div class="unitInput"><input id="customMaxChargeSoc" class="input" inputmode="decimal"><span>%</span></div></div>
+      <div><label>Puissance borne min.</label><div class="unitInput"><input id="customMinStationPower" class="input" inputmode="decimal"><span>kW</span></div></div>
     </div>
-    <button id="saveVehicleBtn" class="btn primary wide">Enregistrer</button>
+    <label>Réseaux à privilégier</label><input id="preferredNetworks" class="input" placeholder="Ex. Ionity, Electra, Fastned">
+    <label>Réseaux à éviter</label><input id="avoidedNetworks" class="input" placeholder="Ex. réseau X, réseau Y">
+    <p class="note">Sépare plusieurs réseaux par des virgules. Les réseaux évités sont exclus du planificateur ; les réseaux préférés reçoivent un bonus.</p>
+    <button id="saveVehicleBtn" class="btn primary wide">Enregistrer cette voiture</button>
   </div>
 
   <div class="card">
@@ -186,5 +200,6 @@
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
 <script src="./app.js"></script>
 <script src="./garage-sync.js"></script>
+<script src="./waze.js"></script>
 </body>
 </html>
