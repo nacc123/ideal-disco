@@ -11,13 +11,15 @@
 <link rel="manifest" href="./manifest.json">
 <link rel="icon" href="./icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="./icon.svg">
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
+<link rel="preconnect" href="https://unpkg.com" crossorigin>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" media="print" onload="this.media='all'" crossorigin>
+<noscript><link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"></noscript>
 <link rel="stylesheet" href="./styles.css">
 </head>
 <body>
 <div class="app">
 <header>
-  <div class="brand"><div><div class="logo">ChargeCompare</div><div class="subtitle">Recharge EV • prix • parcours</div></div><span class="version">V11.6</span></div>
+  <div class="brand"><div><div class="logo">ChargeCompare</div><div class="subtitle">Recharge EV • prix • parcours</div></div><span class="version">V11.7</span></div>
 </header>
 
 <nav class="tabs">
@@ -197,10 +199,10 @@
 </main>
 </div>
 
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
-<script src="./app.js"></script>
-<script src="./garage-sync.js"></script>
-<script src="./waze.js"></script>
-<script src="./station-map-ui.js"></script>
+<script defer src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+<script defer src="./app.js"></script>
+<script defer src="./garage-sync.js"></script>
+<script defer src="./waze.js"></script>
+<script defer src="./station-map-ui-lite.js"></script>
 </body>
 </html>
