@@ -16,7 +16,7 @@ style.textContent=`
 .cc-nearby-btn.loading{opacity:.65}
 .cc-user-dot{filter:drop-shadow(0 2px 4px rgba(15,23,42,.25))}
 .cc-cluster-bubble{position:absolute;width:46px;height:46px;margin-left:-23px;margin-top:-23px;border-radius:50%;display:grid;place-items:center;background:#0b78b8;color:#fff;border:4px solid rgba(255,255,255,.96);box-shadow:0 5px 14px rgba(15,23,42,.28);font-size:13px;font-weight:950;cursor:pointer;z-index:650;user-select:none;-webkit-user-select:none}
-@media(max-width:640px){.cc-search-bar{grid-template-columns:auto 1fr auto}.cc-search-bar #ccMapSearchBtn{display:none}.cc-nearby-btn{grid-column:1/-1;width:100%;padding:9px 10px}}
+@media(max-width:640px){.cc-search-bar #ccMapSearchBtn{display:none}.cc-nearby-btn{grid-column:1/-1;width:100%;padding:9px 10px}}
 `;
 document.head.appendChild(style);
 
@@ -86,7 +86,7 @@ function cluster(){
   clearClusters();
   const map=window.CCLazyTiles?.map?.('station');
   if(!map||!window.L||map.getZoom()>14)return;
-  const icons=[...stationMapEl.querySelectorAll('.cc-power-marker')].filter(el=>el.style.display!== 'none');
+  const icons=[...stationMapEl.querySelectorAll('.cc-power-marker')].filter(el=>el.style.display!=='none');
   if(icons.length<18)return;
   const items=icons.map(el=>({el,p:markerPoint(el)})).filter(x=>x.p&&Number.isFinite(x.p.x)&&Number.isFinite(x.p.y));
   const used=new Set(),groups=[];
@@ -112,7 +112,7 @@ function cluster(){
     b.onclick=e=>{e.preventDefault();e.stopPropagation();const ll=map.layerPointToLatLng(L.point(x,y));map.setView(ll,Math.min(18,map.getZoom()+2))};
   });
 }
-function scheduleCluster(){clearTimeout(clusterTimer);clusterTimer=setTimeout(cluster,140)}
+function scheduleCluster(){clearTimeout(clusterTimer);clusterTimer=setTimeout(cluster,180)}
 function bindMapEvents(){
   const map=window.CCLazyTiles?.map?.('station');
   if(!map||map.__ccClusterBound)return false;
@@ -121,8 +121,8 @@ function bindMapEvents(){
   return true;
 }
 const wait=setInterval(()=>{if(bindMapEvents())clearInterval(wait)},100);
-new MutationObserver(scheduleCluster).observe(stationSelect,{childList:true});
-new MutationObserver(scheduleCluster).observe(stationMapEl,{childList:true,subtree:true});
+new MutationObserver(()=>{setTimeout(scheduleCluster,250);setTimeout(scheduleCluster,800)}).observe(stationSelect,{childList:true});
+searchBtn.addEventListener('click',()=>{setTimeout(scheduleCluster,700);setTimeout(scheduleCluster,1400)});
 stationMapEl.addEventListener('touchend',scheduleCluster,{passive:true});
 stationMapEl.addEventListener('mouseup',scheduleCluster,{passive:true});
 window.addEventListener('pageshow',()=>{bindMapEvents();scheduleCluster()});
