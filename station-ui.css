@@ -1,0 +1,40 @@
+#stationMapCard{position:relative;padding:0;overflow:hidden;border-radius:24px;background:#0d1425}
+#stationMapCard>h2{display:none}
+#stationMap{height:min(68vh,680px)!important;min-height:520px;border-radius:24px}
+#stationDetail,#compareCard{display:none!important}
+.cc-map-filters{position:absolute;z-index:1200;top:14px;left:12px;right:12px;display:flex;gap:8px;overflow-x:auto;padding:2px 2px 8px;scrollbar-width:none;pointer-events:auto}
+.cc-map-filters::-webkit-scrollbar{display:none}
+.cc-filter-pill{border:0;background:rgba(255,255,255,.96);color:#172033;border-radius:999px;padding:10px 14px;font-weight:800;white-space:nowrap;box-shadow:0 4px 18px rgba(0,0,0,.16);font-size:14px}
+.cc-filter-pill.active{background:#1599e5;color:#fff}
+.cc-power-anchor{position:absolute;left:0;top:0;width:0;height:0;pointer-events:none;will-change:transform}
+.cc-power-pill{position:absolute;transform:translate(-50%,-105%);min-width:58px;padding:7px 10px;border:3px solid #fff;border-radius:16px;background:#168ccc;color:#fff;text-align:center;font-weight:900;font-size:15px;line-height:1;box-shadow:0 4px 14px rgba(0,0,0,.26);white-space:nowrap}
+.cc-power-pill.low{background:#9aa3b3}.cc-power-pill.mid{background:#167fb8}.cc-power-pill.high{background:#0879b6}.cc-power-pill.ultra{background:#7755d8}
+.cc-power-pill.active{transform:translate(-50%,-105%) scale(1.12);box-shadow:0 0 0 4px rgba(21,153,229,.22),0 6px 18px rgba(0,0,0,.30)}
+.cc-station-sheet{position:fixed;z-index:5000;left:0;right:0;bottom:0;height:238px;transform:translateY(110%);transition:transform .25s ease,height .25s ease;background:#fff;color:#111827;border-radius:26px 26px 0 0;box-shadow:0 -10px 35px rgba(0,0,0,.28);padding-bottom:calc(12px + env(safe-area-inset-bottom));overflow:hidden}
+.cc-station-sheet.open{transform:translateY(0)}
+.cc-station-sheet.expanded{height:min(84vh,760px)}
+.cc-sheet-handle{height:28px;display:flex;align-items:center;justify-content:center;cursor:grab;touch-action:none}
+.cc-sheet-grabber{width:42px;height:5px;border-radius:99px;background:#c8cdd6}
+.cc-sheet-scroll{height:calc(100% - 28px);overflow-y:auto;padding:0 16px 18px;-webkit-overflow-scrolling:touch}
+.cc-sheet-head{display:flex;align-items:flex-start;gap:12px}
+.cc-sheet-title{font-size:20px;line-height:1.15;margin:0;font-weight:900;flex:1}
+.cc-sheet-close{border:0;background:#eef1f5;width:34px;height:34px;border-radius:50%;font-size:22px;line-height:34px;color:#4b5563}
+.cc-sheet-address{font-size:13px;color:#6b7280;margin-top:5px}
+.cc-sheet-quick{display:flex;gap:7px;overflow-x:auto;margin:11px 0 10px;scrollbar-width:none}
+.cc-sheet-quick::-webkit-scrollbar{display:none}
+.cc-sheet-chip{background:#edf4fa;border-radius:10px;padding:7px 9px;font-size:12px;font-weight:800;white-space:nowrap;color:#24364b}
+.cc-sheet-chip.live-ok{background:#e8f8ee;color:#167542}.cc-sheet-chip.live-bad{background:#fff0f0;color:#b32929}
+.cc-sheet-minirow{display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center}
+.cc-sheet-price-main small{display:block;color:#6b7280;font-size:11px}.cc-sheet-price-main strong{display:block;font-size:20px;line-height:1.05;margin-top:2px}
+.cc-sheet-primary{border:0;border-radius:14px;background:#1396df;color:#fff;padding:12px 17px;font-weight:900;font-size:15px;min-width:108px}
+.cc-sheet-expandhint{text-align:center;color:#7b8493;font-size:11px;margin:9px 0 2px}
+.cc-sheet-expanded{display:none;border-top:1px solid #e5e7eb;margin-top:10px;padding-top:13px}
+.cc-station-sheet.expanded .cc-sheet-expanded{display:block}
+.cc-sheet-section{margin-bottom:16px}.cc-sheet-section h3{font-size:15px;margin:0 0 8px}
+.cc-price-list{display:grid;gap:8px}
+.cc-price-line{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;border:1px solid #e7eaf0;border-radius:14px;padding:10px 12px;background:#fafbfc}
+.cc-price-line.best{border-color:#5cc38a;background:#eefaf3}.cc-price-name{font-weight:800}.cc-price-tag{font-size:10px;font-weight:900;color:#6b7280}.cc-price-val{text-align:right;font-weight:900}.cc-price-val small{display:block;color:#6b7280;font-weight:600;font-size:10px}
+.cc-energy-row{display:flex;gap:7px;overflow-x:auto}.cc-energy-btn{border:1px solid #d8dde6;background:#fff;border-radius:999px;padding:7px 11px;font-weight:800}.cc-energy-btn.active{background:#111827;color:#fff;border-color:#111827}
+.cc-sheet-live,.cc-sheet-verdict,.cc-sheet-vehicle{border-radius:14px;background:#f3f6f9;padding:11px 12px;font-size:13px;line-height:1.35}
+.cc-sheet-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}.cc-sheet-actions button{border:1px solid #d8dde6;background:#fff;border-radius:13px;padding:11px 8px;font-weight:800;color:#172033}.cc-sheet-actions .primary{background:#1396df;color:#fff;border-color:#1396df}.cc-sheet-actions .wide{grid-column:1/-1}
+@media(max-width:600px){#stationMap{height:64vh!important;min-height:500px}.cc-station-sheet{border-radius:24px 24px 0 0}.cc-map-filters{top:10px}.cc-filter-pill{padding:9px 13px}}
