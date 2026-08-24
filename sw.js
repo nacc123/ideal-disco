@@ -1,5 +1,5 @@
-const CACHE="chargecompare-v11-7";
-const SHELL=["./","./index.html","./styles.css","./manifest.json","./icon.svg"];
+const CACHE="chargecompare-v11-8";
+const SHELL=["./","./index.html","./styles.css","./manifest.json","./icon.svg","./waze-lite.js"];
 self.addEventListener("install",e=>{
   self.skipWaiting();
   e.waitUntil(caches.open(CACHE).then(c=>c.addAll(SHELL)).catch(()=>{}));
@@ -11,7 +11,7 @@ self.addEventListener("fetch",e=>{
   if(e.request.method!=="GET")return;
   const u=new URL(e.request.url);
   if(u.origin!==location.origin)return;
-  e.respondWith(fetch(e.request).then(r=>{
+  e.respondWith(fetch(e.request,{cache:"no-store"}).then(r=>{
     const copy=r.clone();
     caches.open(CACHE).then(c=>c.put(e.request,copy)).catch(()=>{});
     return r;
