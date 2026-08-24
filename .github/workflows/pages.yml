@@ -34,4 +34,4 @@ jobs:
         id: deployment
         uses: actions/deploy-pages@v4
 
-# Redeploy triggered after enabling GitHub Pages
+# ChargeCompare V11.9 redeploy 2026-08-24
