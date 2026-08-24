@@ -4,3 +4,63 @@
 .card{background:var(--card);border:1px solid var(--line);padding:15px;margin:12px 0;border-radius:7px;box-shadow:0 3px 12px rgba(16,24,40,.035)}h2{font-size:18px;margin:0 0 12px}.sectionHead{display:flex;align-items:center;justify-content:space-between;gap:10px}label{display:block;font-size:12px;font-weight:850;color:var(--muted);margin:10px 0 5px}.input{width:100%;border:1px solid #cfd4dc;background:#fff;color:var(--ink);padding:12px;font-size:16px;border-radius:5px;outline:none}.input:focus{border-color:#667085;box-shadow:0 0 0 3px rgba(102,112,133,.10)}.btn{border:1px solid #cfd4dc;background:#fff;color:var(--ink);padding:11px 12px;font-weight:900;border-radius:5px;font-size:14px}.btn:disabled{opacity:.55}.btn.primary{background:var(--dark);color:#fff;border-color:var(--dark)}.btn.wide{width:100%;margin-top:10px}.btn.small{padding:7px 9px;font-size:12px}.btn.danger{color:var(--bad)}.iconBtn{width:38px;height:38px;border:1px solid #cfd4dc;background:#fff;border-radius:5px;font-size:24px}.searchRow{display:grid;grid-template-columns:1fr auto;gap:8px}.splitTop,.routeInputs,.settingsGrid,.priceGrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.status{font-size:13px;color:var(--muted);margin-top:8px;line-height:1.45}.status.good{color:var(--good)}.status.bad{color:var(--bad)}.muted,.note{font-size:12px;color:var(--muted);line-height:1.45}.chipRow{display:flex;gap:6px;flex-wrap:wrap;margin-top:9px}.chip{font-size:11px;font-weight:900;padding:5px 7px;border:1px solid #d0d5dd;background:#fff;border-radius:4px}.chip.good{color:var(--good);border-color:#abefc6;background:#ecfdf3}.chip.bad{color:var(--bad);border-color:#fecdca;background:#fef3f2}.chip.warn{color:var(--warn);border-color:#fedf89;background:#fffaeb}
 .map{height:330px;border:1px solid var(--line);border-radius:6px;overflow:hidden}.routeMap{height:390px}.tariffBox,.liveBox,.resultBox,.vehicleSummary,.routeVerdict{margin-top:12px;border:1px solid var(--line);background:var(--soft);padding:11px;border-radius:5px;font-size:13px;line-height:1.45}.liveBox .liveGood{color:var(--good);font-weight:900}.liveBox .liveBad{color:var(--bad);font-weight:900}.actionGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-top:10px}.toggleRow{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:8px}.check{font-size:13px;color:var(--ink);font-weight:800;margin:0}.check.block{margin:8px 0}.priceEntry{border:1px solid var(--line);padding:10px;border-radius:5px}.priceTitle{display:flex;align-items:center;justify-content:space-between;gap:6px;font-size:13px;font-weight:900;margin-bottom:6px}.unitInput{display:flex;align-items:center;gap:6px}.unitInput span{font-size:12px;color:var(--muted);font-weight:800;white-space:nowrap}.miniBadge{font-size:9px;font-weight:950;padding:3px 5px;border:1px solid #cfd4dc;border-radius:4px}.miniBadge.real{background:#ecfdf3;color:var(--good);border-color:#abefc6}.miniBadge.public{background:#eff8ff;color:var(--blue);border-color:#b2ddff}.miniBadge.est{background:#fffaeb;color:var(--warn);border-color:#fedf89}.quickEnergy{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:7px 0}.resultBox strong{font-size:18px}.modeRow{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}.routeActions{display:grid;grid-template-columns:1fr auto;gap:8px;margin-top:12px}.summaryGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.summaryGrid>div{background:var(--soft);padding:10px;border-radius:5px}.summaryGrid span{display:block;font-size:11px;color:var(--muted)}.summaryGrid b{font-size:18px}.stopCard{border:1px solid var(--line);padding:12px;border-radius:6px;margin-top:10px}.stopHead{display:flex;justify-content:space-between;gap:10px}.stopHead h3{font-size:15px;margin:0}.stopGrid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}.stopMini{background:var(--soft);padding:9px;border-radius:5px}.stopMini span{display:block;font-size:11px;color:var(--muted)}.stopMini b{font-size:16px}.stopActions{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:8px}.savedPlaces{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0}.savedPlaces button{border:1px solid #d0d5dd;background:#fff;padding:6px 8px;border-radius:4px;font-size:12px;font-weight:800}.listItem{border-top:1px solid var(--line);padding:10px 0;font-size:13px}.listItem:first-child{border-top:0}.listItem small{display:block;color:var(--muted);margin-top:3px}.hidden{display:none!important}
 @media(max-width:640px){.splitTop,.routeInputs,.settingsGrid,.priceGrid{grid-template-columns:1fr}.searchRow{grid-template-columns:1fr}.searchRow .btn{width:100%}.actionGrid{grid-template-columns:1fr}.summaryGrid{grid-template-columns:1fr 1fr}.map{height:300px}.routeMap{height:340px}.stopGrid{grid-template-columns:1fr 1fr}.tabs button{font-size:13px;padding:10px 4px}}
+
+/* ChargeCompare V11.6 — carte bornes plein écran + fiche mobile */
+.cc-original-search-card{display:none!important}
+.cc-map-stage{position:relative;height:620px;min-height:520px;margin:0 0 14px;border:1px solid var(--line);overflow:hidden;background:#e7eef3;border-radius:8px}
+.cc-map-card{position:absolute!important;inset:0;margin:0!important;padding:0!important;border:0!important;border-radius:0!important;box-shadow:none!important;background:transparent!important}
+.cc-map-card>h2{display:none!important}
+.cc-map-card .map,#stationMap{height:100%!important;width:100%;border:0!important;border-radius:0!important}
+.cc-map-overlay{position:absolute;z-index:700;top:12px;left:12px;right:12px;pointer-events:none}
+.cc-search-bar{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:8px;background:rgba(255,255,255,.97);border:1px solid rgba(16,24,40,.12);box-shadow:0 5px 18px rgba(16,24,40,.16);padding:7px 8px;border-radius:16px;pointer-events:auto}
+.cc-search-icon{font-size:26px;line-height:1;color:#344054;transform:rotate(-20deg);padding-left:3px}
+.cc-search-bar input{min-width:0;border:0;outline:0;background:transparent;font-size:16px;padding:8px 4px;color:var(--ink)}
+.cc-search-bar button{border:0;background:#0b1020;color:#fff;font-weight:900;padding:10px 12px;border-radius:10px}
+.cc-filter-strip{display:flex;gap:7px;overflow-x:auto;scrollbar-width:none;padding:10px 1px 2px;pointer-events:auto;-webkit-overflow-scrolling:touch}
+.cc-filter-strip::-webkit-scrollbar{display:none}
+.cc-filter-chip{white-space:nowrap;border:1px solid rgba(16,24,40,.15);background:rgba(255,255,255,.96);box-shadow:0 3px 10px rgba(16,24,40,.10);padding:8px 11px;border-radius:12px;font-size:13px;font-weight:900;color:#243047}
+.cc-filter-chip.active{background:#0b78b8;color:#fff;border-color:#0b78b8}
+.cc-map-subrow{display:flex;align-items:center;gap:8px;padding-top:6px;pointer-events:auto}
+.cc-city-mirror{max-width:230px;border:1px solid rgba(16,24,40,.14);background:rgba(255,255,255,.97);box-shadow:0 3px 10px rgba(16,24,40,.10);padding:8px 10px;border-radius:10px;font-size:13px;font-weight:800;color:#243047}
+.cc-map-status{display:inline-block;max-width:min(520px,90%);background:rgba(255,255,255,.93);border:1px solid rgba(16,24,40,.10);box-shadow:0 2px 8px rgba(16,24,40,.08);padding:6px 9px;border-radius:9px;font-size:11px;color:#667085;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cc-map-status.good{color:var(--good)}.cc-map-status.bad{color:var(--bad)}
+.cc-map-list-btn{position:absolute;z-index:705;right:14px;bottom:16px;border:1px solid rgba(16,24,40,.14);background:rgba(255,255,255,.97);box-shadow:0 4px 14px rgba(16,24,40,.18);padding:10px 13px;border-radius:12px;font-size:14px;font-weight:900;color:#243047}
+.cc-power-marker{filter:drop-shadow(0 3px 5px rgba(15,23,42,.22))}
+#stationMap .leaflet-marker-shadow{display:none!important}
+#stationMap .leaflet-popup{display:none!important}
+#stationMap .leaflet-control-zoom{margin-top:154px}
+
+.cc-station-sheet{position:fixed;z-index:2000;left:50%;bottom:calc(10px + env(safe-area-inset-bottom));width:min(680px,calc(100vw - 18px));height:min(38vh,340px);transform:translate(-50%,calc(100% + 30px));background:#fff;border:1px solid rgba(16,24,40,.12);box-shadow:0 -8px 34px rgba(16,24,40,.22);border-radius:18px 18px 12px 12px;transition:transform .22s ease,height .22s ease;overflow:hidden;display:flex;flex-direction:column}
+.cc-station-sheet.open{transform:translate(-50%,0)}
+.cc-station-sheet.expanded{height:min(84vh,760px)}
+.cc-sheet-handle{height:22px;flex:0 0 22px;border:0;background:#fff;padding:8px 0 4px;display:flex;justify-content:center;align-items:center}
+.cc-sheet-handle span{display:block;width:42px;height:4px;border-radius:4px;background:#c7cdd6}
+.cc-sheet-toolbar{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;padding:4px 15px 10px;border-bottom:1px solid #eef0f3;background:#fff}
+.cc-sheet-kicker{font-size:10px;font-weight:900;letter-spacing:.06em;text-transform:uppercase;color:#667085}
+.cc-sheet-title{font-size:18px;font-weight:950;color:#101828;margin-top:2px;line-height:1.15}
+.cc-sheet-sub{font-size:12px;color:#667085;margin-top:4px;line-height:1.25}
+.cc-sheet-close{width:34px;height:34px;flex:0 0 34px;border:1px solid #d0d5dd;background:#fff;border-radius:9px;font-size:24px;line-height:1;color:#344054}
+.cc-sheet-body{overflow-y:auto;overscroll-behavior:contain;padding:0 12px 14px;-webkit-overflow-scrolling:touch}
+.cc-sheet-body>#stationDetail,.cc-sheet-body>#compareCard{border:0!important;box-shadow:none!important;border-radius:0!important;margin:0!important;padding:13px 3px!important}
+.cc-sheet-body>#stationDetail{border-bottom:1px solid #eef0f3!important}
+.cc-sheet-body #stationName{display:none}
+.cc-sheet-body #stationAddress{display:none}
+.cc-sheet-body .sectionHead{justify-content:flex-end;margin-bottom:-4px}
+.cc-sheet-body .tariffBox,.cc-sheet-body .liveBox,.cc-sheet-body .resultBox{border-radius:10px}
+.cc-sheet-body .actionGrid{grid-template-columns:repeat(4,minmax(0,1fr))}
+.cc-sheet-body .actionGrid .btn{padding:10px 7px;font-size:12px}
+
+@media(max-width:640px){
+  .app{padding-left:0;padding-right:0}
+  header,.tabs,#routeTab,#garageTab{margin-left:14px;margin-right:14px}
+  #stationsTab{margin:0;position:relative}
+  .cc-map-stage{height:calc(100dvh - 154px);min-height:520px;margin:0;border-left:0;border-right:0;border-radius:0}
+  .cc-map-overlay{top:10px;left:10px;right:10px}
+  .cc-search-bar{border-radius:14px}
+  .cc-search-bar button{padding:9px 10px;font-size:12px}
+  .cc-map-status{max-width:72vw}
+  .cc-map-list-btn{bottom:14px;right:12px}
+  .cc-station-sheet{width:calc(100vw - 10px);bottom:calc(5px + env(safe-area-inset-bottom));height:39vh;border-radius:18px 18px 8px 8px}
+  .cc-station-sheet.expanded{height:86vh}
+  .cc-sheet-body .actionGrid{grid-template-columns:1fr 1fr}
+}
